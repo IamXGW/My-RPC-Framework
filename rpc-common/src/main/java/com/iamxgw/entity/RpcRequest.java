@@ -7,15 +7,16 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * 消费者向提供者发送的请求对象
+ *
+ * @author IamXGW
+ */
+
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class RpcRequest implements Serializable {
-    /**
-     * 请求号
-     */
-    private String requestId;
     /**
      * 待调用接口名称
      */
@@ -32,4 +33,5 @@ public class RpcRequest implements Serializable {
      * 调用方法的参数类型
      */
     private Class<?>[] paramTypes;
+
 }

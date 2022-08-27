@@ -6,7 +6,7 @@ import com.iamxgw.enumeration.RpcError;
 /**
  * RPC调用异常
  *
- * @author ziyang
+ * @author IamXGW
  */
 public class RpcException extends RuntimeException {
 

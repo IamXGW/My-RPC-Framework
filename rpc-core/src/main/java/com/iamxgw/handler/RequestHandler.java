@@ -32,5 +32,3 @@ public class RequestHandler {
         return method.invoke(service, rpcRequest.getParameters());
     }
 }
-
-

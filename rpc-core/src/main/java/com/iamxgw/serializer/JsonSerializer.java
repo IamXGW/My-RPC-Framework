@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iamxgw.entity.RpcRequest;
 import com.iamxgw.enumeration.SerializerCode;
-import com.iamxgw.exception.SerializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,7 @@ import java.io.IOException;
 
 /**
  * 使用JSON格式的序列化器
- * @author
+ * @author IamXGW
  */
 public class JsonSerializer implements CommonSerializer {
 
@@ -25,8 +24,9 @@ public class JsonSerializer implements CommonSerializer {
         try {
             return objectMapper.writeValueAsBytes(obj);
         } catch (JsonProcessingException e) {
-            logger.error("序列化时有错误发生:", e);
-            throw new SerializeException("序列化时有错误发生");
+            logger.error("序列化时有错误发生: {}", e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -34,13 +34,14 @@ public class JsonSerializer implements CommonSerializer {
     public Object deserialize(byte[] bytes, Class<?> clazz) {
         try {
             Object obj = objectMapper.readValue(bytes, clazz);
-            if (obj instanceof RpcRequest) {
+            if(obj instanceof RpcRequest) {
                 obj = handleRequest(obj);
             }
             return obj;
         } catch (IOException e) {
-            logger.error("序列化时有错误发生:", e);
-            throw new SerializeException("序列化时有错误发生");
+            logger.error("反序列化时有错误发生: {}", e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -50,9 +51,9 @@ public class JsonSerializer implements CommonSerializer {
      */
     private Object handleRequest(Object obj) throws IOException {
         RpcRequest rpcRequest = (RpcRequest) obj;
-        for (int i = 0; i < rpcRequest.getParamTypes().length; i++) {
+        for(int i = 0; i < rpcRequest.getParamTypes().length; i ++) {
             Class<?> clazz = rpcRequest.getParamTypes()[i];
-            if (!clazz.isAssignableFrom(rpcRequest.getParameters()[i].getClass())) {
+            if(!clazz.isAssignableFrom(rpcRequest.getParameters()[i].getClass())) {
                 byte[] bytes = objectMapper.writeValueAsBytes(rpcRequest.getParameters()[i]);
                 rpcRequest.getParameters()[i] = objectMapper.readValue(bytes, clazz);
             }
