@@ -4,6 +4,9 @@ import com.iamxgw.codec.CommonDecoder;
 import com.iamxgw.codec.CommonEncoder;
 import com.iamxgw.entity.RpcRequest;
 import com.iamxgw.entity.RpcResponse;
+import com.iamxgw.registry.NacosServiceRegistry;
+import com.iamxgw.registry.ServiceRegistry;
+import com.iamxgw.serializer.CommonSerializer;
 import com.iamxgw.serializer.JsonSerializer;
 import com.iamxgw.serializer.KryoSerializer;
 import com.iamxgw.transport.RpcClient;
@@ -16,17 +19,18 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+
 public class NettyClient implements RpcClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private String host;
-    private int port;
     private static final Bootstrap bootstrap;
+    private final ServiceRegistry serviceRegistry;
+    private CommonSerializer serializer;
 
-    public NettyClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public NettyClient() {
+        this.serviceRegistry = new NacosServiceRegistry();
     }
 
     static {
@@ -49,9 +53,9 @@ public class NettyClient implements RpcClient {
     @Override
     public Object sendRequest(RpcRequest rpcRequest) {
         try {
-            ChannelFuture future = bootstrap.connect(host, port).sync();
-            logger.info("客户端连接到服务器 {}:{}", host, port);
-            Channel channel = future.channel();
+//            ChannelFuture future = bootstrap.connect(host, port).sync();
+            InetSocketAddress inetSocketAddress = serviceRegistry.lookupService(rpcRequest.getInterfaceName());
+            Channel channel = ChannelProvider.get(inetSocketAddress, serializer);
             if(channel != null) {
                 channel.writeAndFlush(rpcRequest).addListener(future1 -> {
                     if(future1.isSuccess()) {
@@ -69,5 +73,10 @@ public class NettyClient implements RpcClient {
             logger.error("发送消息时有错误发生: ", e);
         }
         return null;
+    }
+
+    @Override
+    public void setSerializer(CommonSerializer serializer) {
+        this.serializer = serializer;
     }
 }

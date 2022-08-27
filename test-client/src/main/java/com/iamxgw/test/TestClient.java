@@ -2,7 +2,6 @@ package com.iamxgw.test;
 
 import com.iamxgw.HelloObject;
 import com.iamxgw.HelloService;
-import com.iamxgw.transport.RpcClientProxy;
 
 public class TestClient {
     public static void main(String[] args) {
